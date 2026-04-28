@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--aurora-black);color:var(--fg);font-family:var(--font-sans)}
+  .scene{position:relative;height:260px;overflow:hidden;border-bottom:1px solid var(--line)}
+  .scene::before{content:"";position:absolute;inset:0;background:
+    radial-gradient(600px 320px at 85% -20%, rgba(93,235,90,.18), transparent 60%),
+    radial-gradient(700px 340px at 5% 10%, rgba(18,56,62,.6), transparent 60%),
+    radial-gradient(800px 360px at 50% 110%, rgba(18,56,62,.75), transparent 60%),
+    var(--aurora-black)}
+  .stars{position:absolute;inset:0;opacity:.4;background-image:
+    radial-gradient(1.4px 1.4px at 20% 30%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 70% 15%, #fff 50%, transparent 51%),
+    radial-gradient(1.2px 1.2px at 40% 60%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 90% 45%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 15% 80%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 85% 75%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 55% 90%, #fff 50%, transparent 51%)}
+  .caption{padding:14px 20px;font-family:var(--font-mono);font-size:11px;color:var(--fg-dim);letter-spacing:.1em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="scene"><div class="stars"></div></div>
+<div class="caption">Aurora backdrop · radial green glow + dark‑green depth + starfield overlay</div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--aurora-black);padding:24px;color:var(--fg);font-family:var(--font-sans)}
+  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  .chip{border:1px solid var(--line);background:rgba(21,30,39,.5);border-radius:12px;padding:14px 12px;display:flex;flex-direction:column;gap:6px;backdrop-filter:blur(6px)}
+  .chip .pos{font-family:var(--font-mono);font-size:11px;color:var(--fg-dim);letter-spacing:.12em}
+  .chip .amt{font-size:18px;font-weight:700;letter-spacing:-.015em}
+  .chip .amt small{color:var(--fg-muted);font-weight:500;font-size:12px}
+  .chip.top{border-color:rgba(93,235,90,.38);background:linear-gradient(180deg,rgba(93,235,90,.1),rgba(21,30,39,.5))}
+  .chip.top .amt{color:var(--aurora-green)}
+</style>
+</head>
+<body>
+<div class="grid">
+  <div class="chip top"><span class="pos">01</span><span class="amt">$200<small> in $AURORA</small></span></div>
+  <div class="chip top"><span class="pos">02</span><span class="amt">$150<small> in $AURORA</small></span></div>
+  <div class="chip top"><span class="pos">03</span><span class="amt">$100<small> in $AURORA</small></span></div>
+  <div class="chip"><span class="pos">04</span><span class="amt">$50<small> in $AURORA</small></span></div>
+  <div class="chip"><span class="pos">05</span><span class="amt">$30<small> in $AURORA</small></span></div>
+</div>
+</body>
+</html>

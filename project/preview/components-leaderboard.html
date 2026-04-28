@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--aurora-black);padding:20px;color:var(--fg);font-family:var(--font-sans)}
+  .lb{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:linear-gradient(180deg, rgba(21,30,39,.92), rgba(16,24,32,.85))}
+  .row{display:grid;grid-template-columns:60px 1fr 120px;align-items:center;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.04)}
+  .row:last-child{border:0}
+  .rank{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.04);border:1px solid var(--line);font-family:var(--font-mono);font-size:12px;color:#c5cdda}
+  .rank.g1{background:var(--aurora-green);border-color:var(--aurora-green);color:var(--aurora-black);font-weight:700;box-shadow:var(--shadow-glow)}
+  .rank.g2{background:#fff;border-color:#fff;color:var(--aurora-black);font-weight:700}
+  .rank.g3{background:var(--aurora-dark-green);border-color:var(--aurora-green);color:var(--aurora-green);font-weight:700}
+  .user{display:flex;align-items:center;gap:10px}
+  .av{width:26px;height:26px;border-radius:50%;background:var(--aurora-dark-green);display:grid;place-items:center;color:var(--aurora-green);font-family:var(--font-mono);font-size:10px;font-weight:700;border:1px solid rgba(93,235,90,.3)}
+  .name{font-weight:600;font-size:14px}
+  .pts{text-align:right;font-family:var(--font-mono);font-weight:700;font-size:14px}
+  .pts .u{color:var(--fg-dim);font-weight:400;font-size:11px;margin-left:4px}
+</style>
+</head>
+<body>
+<div class="lb">
+  <div class="row"><div><span class="rank g1">1</span></div><div class="user"><span class="av">LE</span><span class="name">leotcn</span></div><div class="pts">1,740<span class="u">AURKu</span></div></div>
+  <div class="row"><div><span class="rank g2">2</span></div><div class="user"><span class="av">SY</span><span class="name">syedwaris</span></div><div class="pts">1,470<span class="u">AURKu</span></div></div>
+  <div class="row"><div><span class="rank g3">3</span></div><div class="user"><span class="av">PR</span><span class="name">praise_ali</span></div><div class="pts">1,185<span class="u">AURKu</span></div></div>
+  <div class="row"><div><span class="rank">4</span></div><div class="user"><span class="av">JE</span><span class="name">jeancash251</span></div><div class="pts">1,040<span class="u">AURKu</span></div></div>
+</div>
+</body>
+</html>

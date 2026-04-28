@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--aurora-black);padding:28px;color:var(--fg);font-family:var(--font-sans)}
+  .row{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .ic{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;background:rgba(93,235,90,.08);border:1px solid rgba(93,235,90,.22);color:var(--aurora-green)}
+  .ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8}
+  .lbl{font-family:var(--font-mono);font-size:10px;color:var(--fg-dim);letter-spacing:.1em;text-transform:uppercase;margin-top:6px;text-align:center}
+  .item{display:flex;flex-direction:column;align-items:center;width:70px}
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="item"><div class="ic"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 0-3.3 6.5L20 20l-1.5-3.3"/></svg></div><div class="lbl">Help</div></div>
+  <div class="item"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/><path d="M8 10h8M8 13h5"/></svg></div><div class="lbl">Chat</div></div>
+  <div class="item"><div class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 9h16M9 14h6"/></svg></div><div class="lbl">Guide</div></div>
+  <div class="item"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v5l3 2"/></svg></div><div class="lbl">Event</div></div>
+  <div class="item"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6l8 6 8-6"/><rect x="4" y="6" width="16" height="12" rx="2"/></svg></div><div class="lbl">Feedback</div></div>
+  <div class="item"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg></div><div class="lbl">Invite</div></div>
+</div>
+<div style="font-family:var(--font-mono);font-size:11px;color:var(--fg-dim);margin-top:18px;letter-spacing:.1em">STROKE 1.8 · FILL NONE · 24×24 VIEWBOX · CURRENTCOLOR</div>
+</body>
+</html>

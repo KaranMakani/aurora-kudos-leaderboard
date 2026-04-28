@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--aurora-black);padding:24px;color:var(--fg);font-family:var(--font-sans)}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .item{text-align:center}
+  .box{background:var(--bg-panel);border:1px solid var(--line);height:70px;margin-bottom:8px}
+  .lbl{font-family:var(--font-mono);font-size:11px;color:var(--fg-dim);letter-spacing:.1em;text-transform:uppercase}
+  .val{font-family:var(--font-mono);font-size:11px;color:var(--fg-muted);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="grid">
+  <div class="item"><div class="box" style="border-radius:6px"></div><div class="lbl">r-1</div><div class="val">6px · tag</div></div>
+  <div class="item"><div class="box" style="border-radius:8px"></div><div class="lbl">r-2</div><div class="val">8px · button</div></div>
+  <div class="item"><div class="box" style="border-radius:10px"></div><div class="lbl">r-3</div><div class="val">10px · CTA</div></div>
+  <div class="item"><div class="box" style="border-radius:12px"></div><div class="lbl">r-4</div><div class="val">12px · chip</div></div>
+  <div class="item"><div class="box" style="border-radius:16px"></div><div class="lbl">r-5</div><div class="val">16px · panel</div></div>
+  <div class="item"><div class="box" style="border-radius:20px"></div><div class="lbl">r-6</div><div class="val">20px · feature</div></div>
+  <div class="item"><div class="box" style="border-radius:999px"></div><div class="lbl">r-full</div><div class="val">999px · pill</div></div>
+  <div class="item"><div class="box" style="border-radius:50%;width:70px;margin:0 auto 8px"></div><div class="lbl">circle</div><div class="val">avatar</div></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--aurora-black);padding:28px;color:var(--fg);font-family:var(--font-sans)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center}
+  .tile{border:1px solid var(--line);border-radius:12px;padding:24px;display:flex;align-items:center;justify-content:center;background:var(--bg-panel);min-height:90px}
+  .tile img{height:32px}
+  .tile.token img{height:54px}
+  .lbl{font-family:var(--font-mono);font-size:11px;color:var(--fg-dim);letter-spacing:.14em;text-transform:uppercase;margin-top:8px;text-align:center}
+</style>
+</head>
+<body>
+<div class="grid">
+  <div>
+    <div class="tile"><img src="../assets/aurora-logo-inline-light.png" alt="Aurora inline logo"></div>
+    <div class="lbl">Inline · primary lockup</div>
+  </div>
+  <div>
+    <div class="tile token"><img src="../assets/aurora-token.svg" alt="Aurora token mark" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div style="display:none;width:54px;height:54px;border:3px solid var(--aurora-green);border-radius:14px;transform:rotate(0deg);clip-path:polygon(50% 0,100% 100%,0 100%)"></div></div>
+    <div class="lbl">Token mark · standalone</div>
+  </div>
+</div>
+</body>
+</html>

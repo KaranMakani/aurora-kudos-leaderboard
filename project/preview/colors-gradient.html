@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--aurora-black);padding:24px;font-family:var(--font-sans);color:var(--fg)}
+  .grad{height:120px;border-radius:16px;background:var(--headline-gradient);display:flex;align-items:center;justify-content:center;color:#0b0f14;font-family:var(--font-display);font-weight:800;font-size:40px;letter-spacing:-.03em}
+  .stops{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+  .stop{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px}
+  .stop .sq{width:28px;height:28px;border-radius:6px}
+  .stop .lbl{font-size:12px;font-weight:700}
+  .stop .hex{font-family:var(--font-mono);font-size:11px;color:var(--fg-dim)}
+</style>
+</head>
+<body>
+<div class="grad">aurora</div>
+<div class="stops">
+  <div class="stop"><div class="sq" style="background:#FF3EA5"></div><div><div class="lbl">Grad Pink</div><div class="hex">#FF3EA5 · 0%</div></div></div>
+  <div class="stop"><div class="sq" style="background:#B46BFF"></div><div><div class="lbl">Grad Violet</div><div class="hex">#B46BFF · 45%</div></div></div>
+  <div class="stop"><div class="sq" style="background:#5AD7FF"></div><div><div class="lbl">Grad Cyan</div><div class="hex">#5AD7FF · 100%</div></div></div>
+</div>
+</body>
+</html>

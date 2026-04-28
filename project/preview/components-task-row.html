@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--aurora-black);padding:20px;color:var(--fg);font-family:var(--font-sans)}
+  .task{display:grid;grid-template-columns:50px 1fr 110px 90px;align-items:center;padding:14px 18px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:linear-gradient(180deg, rgba(21,30,39,.85), rgba(18,56,62,.25))}
+  .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:rgba(93,235,90,.08);border:1px solid rgba(93,235,90,.22);color:var(--aurora-green)}
+  .ic svg{width:16px;height:16px}
+  .name{font-weight:600;font-size:14.5px;letter-spacing:-.005em}
+  .name .d{display:block;color:var(--fg-muted);font-weight:400;font-size:12.5px;margin-top:2px}
+  .tag{font-family:var(--font-mono);font-size:12px;color:var(--fg-muted);display:inline-block;padding:3px 8px;border:1px solid var(--line);border-radius:6px}
+  .pts{text-align:right;font-family:var(--font-mono);font-size:13px;color:var(--aurora-green);font-weight:500}
+  .pts small{color:var(--fg-dim)}
+</style>
+</head>
+<body>
+<div class="task">
+  <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12a8 8 0 1 0-3.3 6.5L20 20l-1.5-3.3"/></svg></div>
+  <div class="name">Help someone in support<span class="d">Answer a real question and get a ✅ from a mod.</span></div>
+  <div><span class="tag">#help</span></div>
+  <div class="pts">+10 <small>Kudos</small></div>
+</div>
+<div class="task">
+  <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 9h16M9 14h6"/></svg></div>
+  <div class="name">Write a tutorial or guide<span class="d">A blog, Twitter thread, or video that helps others onboard.</span></div>
+  <div><span class="tag">#showcase</span></div>
+  <div class="pts">+50 <small>Kudos</small></div>
+</div>
+</body>
+</html>

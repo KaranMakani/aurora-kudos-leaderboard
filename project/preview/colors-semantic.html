@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--aurora-black);padding:24px;font-family:var(--font-sans);color:var(--fg)}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .row{border:1px solid var(--line);border-radius:10px;padding:14px}
+  .row .dot{width:16px;height:16px;border-radius:50%;margin-bottom:10px}
+  .row .name{font-weight:700;font-size:12px;letter-spacing:-.005em;margin-bottom:2px}
+  .row .desc{font-size:11px;color:var(--fg-dim);line-height:1.4}
+  .row .var{font-family:var(--font-mono);font-size:10px;color:var(--fg-muted);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="grid">
+  <div class="row"><div class="dot" style="background:#5DEB5A;box-shadow:var(--shadow-glow)"></div><div class="name">Accent</div><div class="desc">Primary CTA, live dots</div><div class="var">--accent</div></div>
+  <div class="row"><div class="dot" style="background:rgba(93,235,90,.14);border:1px solid rgba(93,235,90,.38)"></div><div class="name">Accent Soft</div><div class="desc">Icon tile bg</div><div class="var">--accent-soft</div></div>
+  <div class="row"><div class="dot" style="background:#FF5D7A"></div><div class="name">Danger</div><div class="desc">Negative delta</div><div class="var">--danger</div></div>
+  <div class="row"><div class="dot" style="background:#FFFFFF"></div><div class="name">FG</div><div class="desc">Primary text</div><div class="var">--fg</div></div>
+  <div class="row"><div class="dot" style="background:#C5D1D4"></div><div class="name">FG-2</div><div class="desc">Lede / body on dark</div><div class="var">--fg-2</div></div>
+  <div class="row"><div class="dot" style="background:#9FB1B6"></div><div class="name">FG Muted</div><div class="desc">Secondary / meta</div><div class="var">--fg-muted</div></div>
+  <div class="row"><div class="dot" style="background:#6B7D82"></div><div class="name">FG Dim</div><div class="desc">Labels / tertiary</div><div class="var">--fg-dim</div></div>
+  <div class="row"><div class="dot" style="background:rgba(255,255,255,.14);border:1px solid #fff"></div><div class="name">Line</div><div class="desc">Hairlines / borders</div><div class="var">--line</div></div>
+</div>
+</body>
+</html>
