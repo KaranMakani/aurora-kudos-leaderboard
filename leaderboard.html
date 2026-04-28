@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aurora Kudos Leaderboard Widget</title>
+<style>
+  /* ========== AURORA BRAND TOKENS ========== */
+  :root{
+    --aurora-black:#101820;
+    --aurora-cloud-black:#151E27;
+    --aurora-dark-green:#12383E;
+    --aurora-green:#5DEB5A;
+    --aurora-white:#FFFFFF;
+
+    --bg:var(--aurora-black);
+    --panel:var(--aurora-cloud-black);
+    --panel-2:#1a2633;
+    --line:rgba(255,255,255,0.08);
+    --line-2:rgba(255,255,255,0.14);
+    --text:var(--aurora-white);
+    --muted:#9fb1b6;
+    --dim:#6b7d82;
+    --green:var(--aurora-green);
+    --green-soft:rgba(93,235,90,.14);
+
+    --u:8px;
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:transparent;color:var(--text);font-family:var(--font-sans);-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+  /* ========== Leaderboard panel (the box only) ========== */
+  .lb{
+    border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg, rgba(21,30,39,.92), rgba(16,24,32,.85));
+    backdrop-filter:blur(8px);
+    max-width:1200px;
+    margin:0 auto;
+  }
+  .lb-top{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:18px 22px;border-bottom:1px solid var(--line);
+    background:rgba(18,56,62,.25);
+  }
+  .lb-title{display:flex;align-items:center;gap:12px;font-weight:700;font-size:15px;letter-spacing:-.005em}
+  .live-dot{width:8px;height:8px;border-radius:50%;background:var(--aurora-green);box-shadow:0 0 10px var(--aurora-green);animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  .lb-filters{display:flex;gap:10px;align-items:center;font-size:13px}
+  .lb-filter{
+    display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);
+    border-radius:8px;background:rgba(255,255,255,.02);color:#c5cdda;
+  }
+  .lb-filter .lbl{color:var(--dim);font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+  .lb-filter select{background:transparent;color:inherit;border:0;font:inherit;outline:none;font-family:var(--font-sans)}
+  .lb-filter select option{background:var(--aurora-cloud-black)}
+
+  .lb-head{
+    display:grid;grid-template-columns:80px 1fr 160px;
+    padding:12px 24px;border-bottom:1px solid var(--line);
+    font-family:var(--font-mono);font-size:11px;color:var(--dim);
+    letter-spacing:.18em;text-transform:uppercase;
+  }
+  .lb-head .r{text-align:right}
+  .row{
+    display:grid;grid-template-columns:80px 1fr 160px;align-items:center;
+    padding:14px 24px;border-bottom:1px solid rgba(255,255,255,.04);
+    transition:background .2s ease;position:relative;
+  }
+  .row:last-child{border-bottom:0}
+  .row:hover{background:rgba(93,235,90,.03)}
+  .rank{
+    display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;
+    background:rgba(255,255,255,.04);border:1px solid var(--line);
+    font-family:var(--font-mono);font-size:13px;color:#c5cdda;font-weight:500;
+  }
+  .rank.g1{
+    background:var(--aurora-green);border-color:var(--aurora-green);
+    color:var(--aurora-black);font-weight:700;
+    box-shadow:0 0 20px rgba(93,235,90,.45);
+  }
+  .rank.g2{background:rgba(255,255,255,.9);border-color:#fff;color:var(--aurora-black);font-weight:700}
+  .rank.g3{background:var(--aurora-dark-green);border-color:var(--aurora-green);color:var(--aurora-green);font-weight:700}
+  .user{display:flex;align-items:center;gap:12px}
+  .user-name{font-weight:600;font-size:14.5px;letter-spacing:-.005em}
+  .user-name .handle{color:var(--dim);font-weight:400;margin-left:2px}
+  .pts{text-align:right;font-family:var(--font-mono);font-size:15px;font-weight:700}
+  .pts .unit{color:var(--dim);font-weight:400;font-size:12px;margin-left:4px}
+
+  /* Loading / empty states */
+  .lb-loading{padding:40px 24px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:13px}
+  .lb-loading .spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--aurora-green);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .lb-empty{padding:32px 24px;text-align:center;color:var(--dim);font-family:var(--font-mono);font-size:13px}
+
+  /* "View full" CTA row */
+  .lb-expand{
+    padding:14px 24px;border-top:1px solid var(--line);
+    text-align:center;
+  }
+  .lb-expand a{
+    color:var(--aurora-green);font-weight:600;font-size:13px;
+    display:inline-flex;align-items:center;gap:6px;
+    transition:color .15s ease;
+  }
+  .lb-expand a:hover{text-decoration:underline}
+
+  .lb-foot{
+    padding:14px 22px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:var(--font-mono);font-size:12px;color:var(--dim);
+  }
+  .lb-foot a{color:var(--aurora-green)}
+  .lb-foot a:hover{text-decoration:underline}
+
+  /* ========== Full-leaderboard modal ========== */
+  .modal-overlay{
+    position:fixed;inset:0;z-index:100;
+    background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+    display:none;place-items:center;
+    animation:fadeIn .25s ease;
+  }
+  .modal-overlay.open{display:grid}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal{
+    width:92%;max-width:860px;max-height:88vh;
+    background:var(--aurora-cloud-black);
+    border:1px solid var(--line-2);border-radius:20px;
+    display:flex;flex-direction:column;overflow:hidden;
+    animation:slideUp .3s cubic-bezier(.2,.9,.3,1);
+  }
+  @keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .modal-top{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:22px 28px;border-bottom:1px solid var(--line);
+    background:rgba(18,56,62,.25);
+  }
+  .modal-top h3{margin:0;font-size:18px;font-weight:700;letter-spacing:-.01em}
+  .modal-close{
+    width:36px;height:36px;border-radius:10px;border:1px solid var(--line);
+    background:rgba(255,255,255,.04);display:grid;place-items:center;
+    font-size:18px;color:var(--muted);transition:background .15s ease, color .15s ease;
+  }
+  .modal-close:hover{background:rgba(255,255,255,.08);color:var(--aurora-white)}
+  .modal-head{
+    display:grid;grid-template-columns:56px 1fr 140px;
+    padding:12px 28px;border-bottom:1px solid var(--line);
+    font-family:var(--font-mono);font-size:11px;color:var(--dim);
+    letter-spacing:.18em;text-transform:uppercase;
+  }
+  .modal-head .r{text-align:right}
+  .modal-body{overflow-y:auto;flex:1}
+  .modal-body .row{grid-template-columns:56px 1fr 140px;padding:12px 28px}
+  .modal-body .row:last-child{border-bottom:0}
+  .modal-foot{
+    padding:14px 28px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:var(--font-mono);font-size:12px;color:var(--dim);
+  }
+  .modal-foot .total{color:var(--aurora-green);font-weight:600}
+
+  /* ========== Responsive ========== */
+  @media (max-width:960px){
+    .row,.lb-head{grid-template-columns:56px 1fr 100px}
+    .row{padding:14px 18px}
+    .lb-head{padding:12px 18px}
+    .lb-top{padding:16px 18px;flex-wrap:wrap;gap:12px}
+    .lb-filters{flex:1 1 100%}
+    .lb-filter{width:100%;justify-content:space-between}
+  }
+
+  @media (max-width:760px){
+    .lb-top{padding:14px 16px}
+    .lb-title{font-size:14px}
+    .row,.lb-head{grid-template-columns:44px 1fr 86px;padding:12px 14px}
+    .lb-head{font-size:10px;letter-spacing:.14em}
+    .rank{width:30px;height:30px;font-size:12px}
+    .avatar{width:24px;height:24px;font-size:9.5px}
+    .user-name{font-size:13.5px}
+    .pts{font-size:13.5px}
+    .pts .unit{display:none}
+    .lb-foot{flex-direction:column;gap:8px;padding:12px 14px;text-align:center}
+    .modal{width:96%;max-height:92vh;border-radius:14px}
+    .modal-top{padding:16px 18px}
+    .modal-head{grid-template-columns:44px 1fr 90px;padding:10px 18px;font-size:10px}
+    .modal-body .row{grid-template-columns:44px 1fr 90px;padding:10px 18px}
+    .modal-foot{padding:12px 18px}
+    .modal-body .rank{width:28px;height:28px;font-size:11px}
+    .modal-body .avatar{width:22px;height:22px;font-size:9px}
+    .modal-body .user-name{font-size:13px}
+    .modal-body .pts{font-size:13px}
+    .modal-body .pts .unit{display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- AURORA KUDOS LEADERBOARD WIDGET — embeddable component -->
+<div class="lb" id="kudos-leaderboard">
+  <div class="lb-top">
+    <div class="lb-title"><span class="live-dot"></span>Leaderboard <span style="color:var(--dim);font-weight:400;font-family:var(--font-mono);font-size:12px;margin-left:6px">&middot; live</span></div>
+    <div class="lb-filters">
+      <div class="lb-filter"><span class="lbl">Month</span>
+        <select id="month-select"></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="lb-head">
+    <div>Rank</div>
+    <div>User</div>
+    <div class="r">KUDOS</div>
+  </div>
+
+  <div id="rows">
+    <div class="lb-loading"><span class="spinner"></span>Loading leaderboard&hellip;</div>
+  </div>
+
+  <div class="lb-expand" id="lb-expand-row" style="display:none">
+    <a href="#" id="view-full-btn">View full leaderboard &rarr;</a>
+  </div>
+
+  <div class="lb-foot">
+    <span>Last update &middot; <span id="last-update">&hellip;</span></span>
+    <a href="#" id="refresh-btn" style="color:var(--aurora-green);cursor:pointer">Refresh &rarr;</a>
+  </div>
+</div>
+
+<!-- Full leaderboard modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-top">
+      <h3><span class="live-dot"></span>&nbsp; Full Leaderboard &mdash; <span id="modal-month"></span></h3>
+      <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-head">
+      <div>Rank</div>
+      <div>User</div>
+      <div class="r">KUDOS</div>
+    </div>
+    <div class="modal-body" id="modal-rows"></div>
+    <div class="modal-foot">
+      <span><span class="total" id="modal-count">0</span> contributors</span>
+      <span>Sorted by Kudos &darr;</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== Leaderboard: Google Sheets data + month filter ==========
+(function () {
+  "use strict";
+
+  var SHEET_ID = "1e9R0YBFAiFQCgAsEdZDjCpKsz2qn0biY_RBbXMVYjqM";
+  var SHEET_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:json";
+  var TOP_N = 10;
+
+  var rowsEl        = document.getElementById("rows");
+  var updateEl      = document.getElementById("last-update");
+  var monthSelect   = document.getElementById("month-select");
+  var refreshBtn    = document.getElementById("refresh-btn");
+  var expandRow     = document.getElementById("lb-expand-row");
+  var viewFullBtn   = document.getElementById("view-full-btn");
+  var modalOverlay  = document.getElementById("modal-overlay");
+  var modalClose    = document.getElementById("modal-close");
+  var modalRows     = document.getElementById("modal-rows");
+  var modalMonth    = document.getElementById("modal-month");
+  var modalCount    = document.getElementById("modal-count");
+
+  var allData = [];
+  var months  = [];
+
+  function initials(name) {
+    return (name.replace(/[^a-z0-9]/gi, "").slice(0, 2) || "??").toUpperCase();
+  }
+
+  function escapeAttr(s) {
+    return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function parseKudos(str) {
+    if (!str) return 0;
+    return parseInt(str.replace(/[^0-9]/g, ""), 10) || 0;
+  }
+
+  function parseUser(raw) {
+    var parts = raw.split("#");
+    return { name: parts[0], handle: parts.length > 1 ? "#" + parts.slice(1).join("#") : "" };
+  }
+
+  function buildRowsHtml(list, rankOffset) {
+    var html = "";
+    for (var j = 0; j < list.length; j++) {
+      var entry  = list[j];
+      var parsed = parseUser(entry.user);
+      var rank   = (rankOffset || 0) + j + 1;
+      var rankCls = rank === 1 ? "g1" : rank === 2 ? "g2" : rank === 3 ? "g3" : "";
+      html +=
+        '<div class="row" data-name="' + escapeAttr(parsed.name) + '">' +
+          '<div><span class="rank ' + rankCls + '">' + rank + '</span></div>' +
+          '<div class="user">' +
+            '<div class="user-name">' + escapeAttr(parsed.name) +
+              (parsed.handle ? '<span class="handle">' + escapeAttr(parsed.handle) + '</span>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="pts">' + entry.pts.toLocaleString() + '<span class="unit">Kudos</span></div>' +
+        '</div>';
+    }
+    return html;
+  }
+
+  function fetchData() {
+    rowsEl.innerHTML = '<div class="lb-loading"><span class="spinner"></span>Loading leaderboard&hellip;</div>';
+    expandRow.style.display = "none";
+
+    fetch(SHEET_URL)
+      .then(function (res) { return res.text(); })
+      .then(function (txt) {
+        var jsonStr = txt.replace(/^[^\{]*/, "").replace(/\);?\s*$/, "");
+        var data = JSON.parse(jsonStr);
+        var rows = (data.table && data.table.rows) || [];
+        allData = [];
+        var monthSet = {};
+
+        for (var i = 0; i < rows.length; i++) {
+          var c = rows[i].c;
+          if (!c || !c[1] || !c[2]) continue;
+          var monthLabel = (c[0] && c[0].f) ? c[0].f : "Unknown";
+          allData.push({ month: monthLabel, user: c[1].v || "", pts: parseKudos(c[2].v || "0") });
+          monthSet[monthLabel] = true;
+        }
+
+        months = Object.keys(monthSet).sort(function (a, b) {
+          return new Date(b + " 1") - new Date(a + " 1");
+        });
+
+        populateMonthSelect();
+        renderDashboard();
+        updateTimestamp();
+      })
+      .catch(function (err) {
+        console.error("Failed to fetch leaderboard data:", err);
+        rowsEl.innerHTML = '<div class="lb-empty">Failed to load data. <a href="#" onclick="location.reload();return false">Retry</a></div>';
+      });
+  }
+
+  function populateMonthSelect() {
+    monthSelect.innerHTML = "";
+    for (var i = 0; i < months.length; i++) {
+      var opt = document.createElement("option");
+      opt.value = months[i];
+      opt.textContent = months[i];
+      monthSelect.appendChild(opt);
+    }
+  }
+
+  function getSelectedMonth() {
+    return monthSelect.value || (months[0] || "");
+  }
+
+  function getFilteredSorted() {
+    var selected = getSelectedMonth();
+    var filtered = [];
+    for (var i = 0; i < allData.length; i++) {
+      if (allData[i].month === selected) filtered.push(allData[i]);
+    }
+    filtered.sort(function (a, b) { return b.pts - a.pts; });
+    return filtered;
+  }
+
+  function renderDashboard() {
+    var sorted = getFilteredSorted();
+    if (sorted.length === 0) {
+      rowsEl.innerHTML = '<div class="lb-empty">No data for this month yet.</div>';
+      expandRow.style.display = "none";
+      return;
+    }
+    rowsEl.innerHTML = buildRowsHtml(sorted.slice(0, TOP_N), 0);
+    expandRow.style.display = sorted.length > TOP_N ? "block" : "none";
+  }
+
+  function openFullModal() {
+    var sorted = getFilteredSorted();
+    modalMonth.textContent = getSelectedMonth();
+    modalCount.textContent = sorted.length;
+    modalRows.innerHTML   = buildRowsHtml(sorted, 0);
+    modalOverlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeFullModal() {
+    modalOverlay.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  function updateTimestamp() {
+    var now = new Date();
+    var h = now.getHours();
+    var m = now.getMinutes();
+    var ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12; if (h === 0) h = 12;
+    updateEl.textContent = h + ":" + (m < 10 ? "0" : "") + m + " " + ampm;
+  }
+
+  monthSelect.addEventListener("change", renderDashboard);
+  refreshBtn.addEventListener("click", function (e) { e.preventDefault(); fetchData(); });
+  viewFullBtn.addEventListener("click", function (e) { e.preventDefault(); openFullModal(); });
+  modalClose.addEventListener("click", function (e) { e.preventDefault(); closeFullModal(); });
+  modalOverlay.addEventListener("click", function (e) { if (e.target === modalOverlay) closeFullModal(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeFullModal(); });
+
+  fetchData();
+})();
+</script>
+
+</body>
+</html>
