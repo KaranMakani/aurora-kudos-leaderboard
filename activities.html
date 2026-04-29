@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Aurora Kudos Activities Widget</title>
+<title>Aurora Community Activities Widget</title>
 <style>
   /* ========== AURORA BRAND TOKENS ========== */
   :root{
@@ -27,12 +27,12 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:transparent;color:var(--text);font-family:var(--font-sans);-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
 
-  /* ========== Activities panel (the box only) ========== */
+  /* ========== Activities panel ========== */
   .act{
     border:1px solid var(--line);border-radius:16px;overflow:hidden;
-    background:linear-gradient(180deg, rgba(21,30,39,.85), rgba(18,56,62,.35));
-    backdrop-filter:blur(8px);
+    background:var(--aurora-cloud-black);
     max-width:1200px;
     margin:0 auto;
   }
@@ -42,6 +42,8 @@
     background:rgba(18,56,62,.25);
   }
   .act-title{display:flex;align-items:center;gap:12px;font-weight:700;font-size:15px;letter-spacing:-.005em}
+  .live-dot{width:8px;height:8px;border-radius:50%;background:var(--aurora-green);box-shadow:0 0 10px var(--aurora-green);animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
   .act-badge{
     font-family:var(--font-mono);font-size:11px;font-weight:600;
     padding:3px 10px;border-radius:6px;
@@ -49,127 +51,269 @@
     border:1px solid rgba(93,235,90,.25);
   }
 
+  /* Column headers */
   .act-head{
-    display:grid;grid-template-columns:60px 1fr 180px 120px;
-    padding:16px 24px;border-bottom:1px solid var(--line);
+    display:grid;grid-template-columns:48px 1fr 200px 200px;
+    padding:14px 24px;border-bottom:1px solid var(--line);
     font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;
     color:var(--dim);text-transform:uppercase;
   }
-  .act-head .r{text-align:right}
 
-  .task{
-    display:grid;grid-template-columns:60px 1fr 180px 120px;align-items:center;
-    padding:18px 24px;border-bottom:1px solid rgba(255,255,255,.05);
+  /* Activity row */
+  .ev{
+    display:grid;grid-template-columns:48px 1fr 200px 200px;align-items:center;
+    padding:16px 24px;border-bottom:1px solid rgba(255,255,255,.05);
     transition:background .15s ease;
   }
-  .task:last-child{border-bottom:0}
-  .task:hover{background:rgba(93,235,90,.03)}
-  .task .icon{
-    width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
-    background:rgba(93,235,90,.08);border:1px solid rgba(93,235,90,.22);
-    color:var(--aurora-green);
-  }
-  .task .icon svg{width:16px;height:16px}
-  .task .name{font-weight:600;font-size:15.5px;letter-spacing:-.005em}
-  .task .name .desc{display:block;color:var(--muted);font-weight:400;font-size:13.5px;margin-top:3px;letter-spacing:0}
-  .task .channel{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
-  .task .channel .tag{display:inline-block;padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:rgba(255,255,255,.02)}
-  .task .reward{text-align:right;font-family:var(--font-mono);font-size:14px;color:var(--aurora-green);font-weight:500}
-  .task .reward small{color:var(--dim)}
+  .ev:last-child{border-bottom:0}
+  .ev:hover{background:rgba(93,235,90,.03)}
 
+  /* Emoji icon */
+  .ev .ico{
+    font-size:22px;line-height:1;
+    width:38px;height:38px;display:grid;place-items:center;
+    border-radius:10px;
+    background:rgba(93,235,90,.06);border:1px solid rgba(93,235,90,.18);
+  }
+
+  /* Name + schedule */
+  .ev .info{padding-right:16px}
+  .ev .name{font-weight:600;font-size:15px;letter-spacing:-.005em}
+  .ev .when{display:block;color:var(--muted);font-weight:400;font-size:13px;margin-top:2px}
+
+  /* Time column */
+  .ev .time{font-family:var(--font-mono);font-size:13px;color:var(--muted)}
+  .ev .time .utc{color:var(--dim);font-size:11px;margin-left:2px}
+
+  /* Location column */
+  .ev .where{font-size:13px;color:var(--muted)}
+  .ev .where .pin{color:var(--dim);margin-right:4px;font-size:11px}
+
+  /* Footer */
   .act-foot{
     padding:14px 22px;border-top:1px solid var(--line);
     display:flex;justify-content:space-between;align-items:center;
     font-family:var(--font-mono);font-size:12px;color:var(--dim);
   }
   .act-foot .total{color:var(--aurora-green);font-weight:600}
+  .act-foot a{color:var(--aurora-green);cursor:pointer}
+  .act-foot a:hover{text-decoration:underline}
+
+  /* Loading / empty */
+  .act-loading{padding:40px 24px;text-align:center;color:var(--muted);font-family:var(--font-mono);font-size:13px}
+  .act-loading .spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--aurora-green);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .act-empty{padding:32px 24px;text-align:center;color:var(--dim);font-family:var(--font-mono);font-size:13px}
 
   /* ========== Responsive ========== */
   @media (max-width:960px){
-    .task,.act-head{grid-template-columns:44px 1fr 90px}
-    .task .channel{display:none}
-    .act-head .hc{display:none}
-    .task{padding:16px 18px;gap:12px}
-    .task .icon{width:30px;height:30px}
-    .task .name{font-size:14.5px}
-    .task .name .desc{font-size:12.5px}
+    .ev,.act-head{grid-template-columns:44px 1fr 140px}
+    .ev .where,.act-head .hwhere{display:none}
+    .ev{padding:14px 18px}
+    .act-head{padding:12px 18px}
   }
 
   @media (max-width:760px){
     .act-top{padding:14px 16px}
     .act-title{font-size:14px}
     .act-head{display:none}
-    .task{grid-template-columns:36px 1fr auto;padding:14px 16px;gap:12px}
-    .task .icon{width:30px;height:30px;border-radius:8px}
-    .task .icon svg{width:14px;height:14px}
-    .task .reward{font-size:13px}
+
+    .ev{
+      display:grid;
+      grid-template-columns:36px 1fr;
+      grid-template-areas: "ico info" "ico time";
+      gap:0 10px;
+      padding:14px 16px;
+    }
+    .ev .ico{grid-area:ico;width:36px;height:36px;font-size:18px;border-radius:8px}
+    .ev .info{grid-area:info;min-width:0}
+    .ev .name{font-size:14px}
+    .ev .when{font-size:12px}
+    .ev .time{
+      grid-area:time;
+      font-size:12px;
+      margin-top:2px;
+    }
+    .ev .time .utc{display:none}
+    .ev .where{
+      display:block;
+      grid-column:2;
+      font-size:11.5px;
+      margin-top:4px;
+      opacity:.7;
+    }
+
     .act-foot{flex-direction:column;gap:8px;padding:12px 14px;text-align:center}
+  }
+
+  @media (max-width:400px){
+    .act-top{padding:12px 14px}
+    .act-title{font-size:13px}
+    .act-title span{display:none}
+    .ev{padding:12px 14px;gap:0 8px}
+    .ev .ico{width:32px;height:32px;font-size:16px}
+    .ev .name{font-size:13px}
+    .ev .when{font-size:11px}
+    .ev .time{font-size:11px}
+    .ev .where{font-size:10.5px}
+    .act-foot{padding:10px 12px}
   }
 </style>
 </head>
 <body>
 
-<!-- AURORA KUDOS ACTIVITIES WIDGET — embeddable component -->
+<!-- AURORA COMMUNITY ACTIVITIES WIDGET — embeddable component -->
 <div class="act" id="kudos-activities">
   <div class="act-top">
-    <div class="act-title">Ways to earn</div>
-    <div class="act-badge">6 activities</div>
+    <div class="act-title"><span class="live-dot"></span>Activities <span style="color:var(--dim);font-weight:400;font-family:var(--font-mono);font-size:12px;margin-left:6px">&middot; this week</span></div>
+    <div class="act-badge" id="ev-badge">6 activities</div>
   </div>
 
   <div class="act-head">
     <div></div>
     <div>Activity</div>
-    <div class="hc">Where</div>
-    <div class="r">KUDOS</div>
+    <div>Schedule</div>
+    <div class="hwhere">Location</div>
   </div>
 
-  <div class="task">
-    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12a8 8 0 1 0-3.3 6.5L20 20l-1.5-3.3"/></svg></div>
-    <div class="name">Help someone in support<span class="desc">Answer a real question and get a ✔ from a mod.</span></div>
-    <div class="channel"><span class="tag">#help</span></div>
-    <div class="reward">+10 <small>Kudos</small></div>
-  </div>
-
-  <div class="task">
-    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v12H8l-4 4z"/><path d="M8 10h8M8 13h5"/></svg></div>
-    <div class="name">Start a great discussion<span class="desc">Post something thoughtful that gets the community talking.</span></div>
-    <div class="channel"><span class="tag">#general</span></div>
-    <div class="reward">+15 <small>Kudos</small></div>
-  </div>
-
-  <div class="task">
-    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 9h16M9 14h6"/></svg></div>
-    <div class="name">Write a tutorial or guide<span class="desc">A blog, Twitter thread, or video that helps others onboard.</span></div>
-    <div class="channel"><span class="tag">#showcase</span></div>
-    <div class="reward">+50 <small>Kudos</small></div>
-  </div>
-
-  <div class="task">
-    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><path d="M12 8v5l3 2"/></svg></div>
-    <div class="name">Show up for AMAs &amp; events<span class="desc">Attend live, ask smart questions, bring the energy.</span></div>
-    <div class="channel"><span class="tag">#events</span></div>
-    <div class="reward">+20 <small>Kudos</small></div>
-  </div>
-
-  <div class="task">
-    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6l8 6 8-6"/><rect x="4" y="6" width="16" height="12" rx="2"/></svg></div>
-    <div class="name">Ship feedback we act on<span class="desc">Spot a bug, suggest a feature, tell us where things break.</span></div>
-    <div class="channel"><span class="tag">#feedback</span></div>
-    <div class="reward">+25 <small>Kudos</small></div>
-  </div>
-
-  <div class="task">
-    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M3 12h18"/></svg></div>
-    <div class="name">Bring a friend who sticks<span class="desc">Referrals who become active contributors count too.</span></div>
-    <div class="channel"><span class="tag">#invite</span></div>
-    <div class="reward">+30 <small>Kudos</small></div>
+  <div id="rows">
+    <div class="act-loading"><span class="spinner"></span>Loading activities&hellip;</div>
   </div>
 
   <div class="act-foot">
-    <span><span class="total">6</span> ways to earn Kudos</span>
-    <span>More coming soon</span>
+    <span><span class="total" id="ev-count">0</span> activities this week</span>
+    <a href="#" id="refresh-btn">Refresh &rarr;</a>
   </div>
 </div>
+
+<script>
+// ========== Activities: Google Sheets data ==========
+(function () {
+  "use strict";
+
+  var SHEET_ID = "1Vn9YChUIANWjrwa3ovQ2Qq1W3sFXB7AZkxSM5UPKUSA";
+  var SHEET_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:json";
+
+  var rowsEl     = document.getElementById("rows");
+  var refreshBtn = document.getElementById("refresh-btn");
+  var evBadge    = document.getElementById("ev-badge");
+  var evCountEl  = document.getElementById("ev-count");
+
+  var allData = [];
+
+  // ---- Helpers ----
+  function escapeAttr(s) {
+    return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function buildRowHtml(list) {
+    var html = "";
+    for (var i = 0; i < list.length; i++) {
+      var e = list[i];
+      html +=
+        '<div class="ev">' +
+          '<div class="ico">' + escapeAttr(e.emoji) + '</div>' +
+          '<div class="info">' +
+            '<div class="name">' + escapeAttr(e.name) + '</div>' +
+            (e.date ? '<span class="when">' + escapeAttr(e.date) + '</span>' : '') +
+          '</div>' +
+          '<div class="time">' + (e.time ? escapeAttr(e.time) + '<span class="utc"> UTC</span>' : '&mdash;') + '</div>' +
+          '<div class="where">' + escapeAttr(e.location) + '</div>' +
+        '</div>';
+    }
+    return html;
+  }
+
+  // ---- Emoji mapping by activity name ----
+  function emojiFor(name) {
+    var map = {
+      "Reddit Relay": "\u{1F916}",
+      "Clash of Memes": "\u{1F60E}",
+      "Scramble Words": "\u{270D}\u{FE0F}",
+      "Game Night": "\u{1F3AE}",
+      "Quiz Night": "\u{1F9E0}",
+      "Alpha Leaks": "\u{1F525}"
+    };
+    return map[name] || "\u{1F4CD}";
+  }
+
+  // ---- Fetch from Google Sheet ----
+  function fetchData() {
+    rowsEl.innerHTML = '<div class="act-loading"><span class="spinner"></span>Loading activities&hellip;</div>';
+    fetch(SHEET_URL)
+      .then(function (res) { return res.text(); })
+      .then(function (txt) {
+        var jsonStr = txt.replace(/^[^\{]*/, "").replace(/\);?\s*$/, "");
+        var data = JSON.parse(jsonStr);
+        var table = data.table || {};
+        var cols = table.cols || [];
+        var rows = table.rows || [];
+
+        allData = [];
+
+        // First activity is embedded in column headers (Google Sheets quirk)
+        if (cols.length >= 4) {
+          var firstName = (cols[0].label || "").replace(/^Activity\s*/i, "").trim();
+          var firstDate = (cols[1].label || "").replace(/^Subheading\s*/i, "").trim();
+          var firstTime = (cols[2].label || "").replace(/^Schedule\s*/i, "").trim();
+          var firstLoc  = (cols[3].label || "").replace(/^Location\s*/i, "").trim();
+          if (firstName) {
+            allData.push({
+              emoji:    emojiFor(firstName),
+              name:     firstName,
+              date:     firstDate === "-" ? "" : firstDate,
+              time:     firstTime === "-" ? "" : firstTime,
+              location: firstLoc
+            });
+          }
+        }
+
+        // Remaining activities from data rows
+        for (var i = 0; i < rows.length; i++) {
+          var c = rows[i].c;
+          if (!c || !c[0]) continue;
+          var dateVal = "";
+          if (c[1]) {
+            dateVal = (c[1].f || "").trim() || (c[1].v || "").toString();
+          }
+          var timeVal = (c[2] && c[2].v) ? (c[2].v).toString().trim() : "";
+          var actName = (c[0].v || "").toString();
+          allData.push({
+            emoji:    emojiFor(actName),
+            name:     actName,
+            date:     dateVal,
+            time:     timeVal === "-" ? "" : timeVal,
+            location: (c[3] && c[3].v) ? (c[3].v).toString() : ""
+          });
+        }
+
+        renderActivities();
+      })
+      .catch(function (err) {
+        console.error("Failed to fetch activity data:", err);
+        rowsEl.innerHTML = '<div class="act-empty">Failed to load data. <a href="#" onclick="location.reload();return false">Retry</a></div>';
+      });
+  }
+
+  // ---- Render ----
+  function renderActivities() {
+    var count = allData.length;
+    evCountEl.textContent = count;
+    evBadge.textContent = count + " activit" + (count === 1 ? "y" : "ies");
+    if (count === 0) {
+      rowsEl.innerHTML = '<div class="act-empty">No activities scheduled this week.</div>';
+      return;
+    }
+    rowsEl.innerHTML = buildRowHtml(allData);
+  }
+
+  // ---- Events ----
+  refreshBtn.addEventListener("click", function (e) { e.preventDefault(); fetchData(); });
+
+  // ---- Boot ----
+  fetchData();
+})();
+</script>
 
 </body>
 </html>

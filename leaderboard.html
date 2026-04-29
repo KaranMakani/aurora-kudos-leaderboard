@@ -36,8 +36,7 @@
   /* ========== Leaderboard panel (the box only) ========== */
   .lb{
     border:1px solid var(--line);border-radius:16px;overflow:hidden;
-    background:linear-gradient(180deg, rgba(21,30,39,.92), rgba(16,24,32,.85));
-    backdrop-filter:blur(8px);
+    background:var(--aurora-cloud-black);
     max-width:1200px;
     margin:0 auto;
   }
@@ -282,8 +281,9 @@
     return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  function parseKudos(str) {
-    if (!str) return 0;
+  function parseKudos(val) {
+    if (val == null) return 0;
+    var str = String(val);
     return parseInt(str.replace(/[^0-9]/g, ""), 10) || 0;
   }
 
