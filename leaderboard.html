@@ -15,7 +15,6 @@
 
     --bg:var(--aurora-black);
     --panel:var(--aurora-cloud-black);
-    --panel-2:#1a2633;
     --line:rgba(255,255,255,0.08);
     --line-2:rgba(255,255,255,0.14);
     --text:var(--aurora-white);
@@ -86,7 +85,6 @@
   .rank.g3{background:var(--aurora-dark-green);border-color:var(--aurora-green);color:var(--aurora-green);font-weight:700}
   .user{display:flex;align-items:center;gap:12px}
   .user-name{font-weight:600;font-size:14.5px;letter-spacing:-.005em}
-  .user-name .handle{color:var(--dim);font-weight:400;margin-left:2px}
   .pts{text-align:right;font-family:var(--font-mono);font-size:15px;font-weight:700}
   .pts .unit{color:var(--dim);font-weight:400;font-size:12px;margin-left:4px}
 
@@ -178,7 +176,6 @@
     .row,.lb-head{grid-template-columns:44px 1fr 86px;padding:12px 14px}
     .lb-head{font-size:10px;letter-spacing:.14em}
     .rank{width:30px;height:30px;font-size:12px}
-    .avatar{width:24px;height:24px;font-size:9.5px}
     .user-name{font-size:13.5px}
     .pts{font-size:13.5px}
     .pts .unit{display:none}
@@ -189,7 +186,6 @@
     .modal-body .row{grid-template-columns:44px 1fr 90px;padding:10px 18px}
     .modal-foot{padding:12px 18px}
     .modal-body .rank{width:28px;height:28px;font-size:11px}
-    .modal-body .avatar{width:22px;height:22px;font-size:9px}
     .modal-body .user-name{font-size:13px}
     .modal-body .pts{font-size:13px}
     .modal-body .pts .unit{display:none}
@@ -250,13 +246,16 @@
 </div>
 
 <script>
-// ========== Leaderboard: Google Sheets data + month filter ==========
+// ========== Leaderboard: Google Sheets per-month tabs ==========
 (function () {
   "use strict";
 
-  var SHEET_ID = "1e9R0YBFAiFQCgAsEdZDjCpKsz2qn0biY_RBbXMVYjqM";
-  var SHEET_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:json";
+  var SHEET_ID = "1hfOeC2xq5B-xy-e5VTHXipOZbS0Mz_3a21Cmy62xdEE";
+  var BASE_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:json&sheet=";
   var TOP_N = 10;
+
+  // Month names = tab names in Google Sheet
+  var MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
   var rowsEl        = document.getElementById("rows");
   var updateEl      = document.getElementById("last-update");
@@ -270,42 +269,32 @@
   var modalMonth    = document.getElementById("modal-month");
   var modalCount    = document.getElementById("modal-count");
 
-  var allData = [];
-  var months  = [];
+  // monthData["April"] = [{user:"leotcn", pts:1980}, ...]
+  var monthData = {};
+  // Available months with data, chronological order (March, April, May...)
+  var availableMonths = [];
 
-  function initials(name) {
-    return (name.replace(/[^a-z0-9]/gi, "").slice(0, 2) || "??").toUpperCase();
-  }
-
+  // ---- Helpers ----
   function escapeAttr(s) {
     return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
   function parseKudos(val) {
     if (val == null) return 0;
-    var str = String(val);
-    return parseInt(str.replace(/[^0-9]/g, ""), 10) || 0;
-  }
-
-  function parseUser(raw) {
-    var parts = raw.split("#");
-    return { name: parts[0], handle: parts.length > 1 ? "#" + parts.slice(1).join("#") : "" };
+    return parseInt(String(val).replace(/[^0-9]/g, ""), 10) || 0;
   }
 
   function buildRowsHtml(list, rankOffset) {
     var html = "";
     for (var j = 0; j < list.length; j++) {
       var entry  = list[j];
-      var parsed = parseUser(entry.user);
       var rank   = (rankOffset || 0) + j + 1;
       var rankCls = rank === 1 ? "g1" : rank === 2 ? "g2" : rank === 3 ? "g3" : "";
       html +=
-        '<div class="row" data-name="' + escapeAttr(parsed.name) + '">' +
+        '<div class="row" data-name="' + escapeAttr(entry.user) + '">' +
           '<div><span class="rank ' + rankCls + '">' + rank + '</span></div>' +
           '<div class="user">' +
-            '<div class="user-name">' + escapeAttr(parsed.name) +
-              (parsed.handle ? '<span class="handle">' + escapeAttr(parsed.handle) + '</span>' : '') +
-            '</div>' +
+            '<div class="user-name">' + escapeAttr(entry.user) + '</div>' +
           '</div>' +
           '<div class="pts">' + entry.pts.toLocaleString() + '<span class="unit">Kudos</span></div>' +
         '</div>';
@@ -313,34 +302,104 @@
     return html;
   }
 
-  function fetchData() {
-    rowsEl.innerHTML = '<div class="lb-loading"><span class="spinner"></span>Loading leaderboard&hellip;</div>';
-    expandRow.style.display = "none";
-
-    fetch(SHEET_URL)
+  // ---- Fetch and validate a single month tab ----
+  function fetchMonth(monthName) {
+    var url = BASE_URL + encodeURIComponent(monthName) + "&t=" + Date.now();
+    return fetch(url)
       .then(function (res) { return res.text(); })
       .then(function (txt) {
         var jsonStr = txt.replace(/^[^\{]*/, "").replace(/\);?\s*$/, "");
         var data = JSON.parse(jsonStr);
         var rows = (data.table && data.table.rows) || [];
-        allData = [];
-        var monthSet = {};
+        var entries = [];
 
         for (var i = 0; i < rows.length; i++) {
           var c = rows[i].c;
           if (!c || !c[1] || !c[2]) continue;
-          var monthLabel = (c[0] && c[0].f) ? c[0].f : "Unknown";
-          allData.push({ month: monthLabel, user: c[1].v || "", pts: parseKudos(c[2].v || "0") });
-          monthSet[monthLabel] = true;
+          // Skip header-only rows (e.g. "Month", "User", "Kudos" text)
+          var userVal = String(c[1].v || "");
+          if (userVal.toLowerCase().indexOf("user") === 0) continue;
+          entries.push({ user: userVal, pts: parseKudos(c[2].v) });
         }
 
-        months = Object.keys(monthSet).sort(function (a, b) {
-          return new Date(b + " 1") - new Date(a + " 1");
-        });
+        // Validate: check that data actually belongs to this month
+        // Empty tabs return Sheet1 data as fallback — detect and reject
+        if (entries.length > 0 && rows[0].c && rows[0].c[0] && rows[0].c[0].f) {
+          var firstMonth = rows[0].c[0].f; // e.g. "April 2026"
+          if (firstMonth.toLowerCase().indexOf(monthName.toLowerCase()) === -1) {
+            return { month: monthName, entries: [] }; // Fallback data — skip
+          }
+        }
 
-        populateMonthSelect();
-        renderDashboard();
-        updateTimestamp();
+        return { month: monthName, entries: entries };
+      })
+      .catch(function () {
+        return { month: monthName, entries: [] };
+      });
+  }
+
+  // ---- Discover which months have data ----
+  function fetchAllMonths() {
+    rowsEl.innerHTML = '<div class="lb-loading"><span class="spinner"></span>Loading leaderboard&hellip;</div>';
+    expandRow.style.display = "none";
+    monthData = {};
+    availableMonths = [];
+
+    // Determine current month index (0=Jan)
+    var currentIdx = new Date().getMonth();
+
+    // Fetch current month first for instant display
+    return fetchMonth(MONTH_NAMES[currentIdx])
+      .then(function (result) {
+        if (result.entries.length > 0) {
+          monthData[result.month] = result.entries;
+        }
+
+        // Show current month immediately if it has data
+        var displayMonth = result.entries.length > 0 ? result.month : null;
+        if (displayMonth) {
+          availableMonths = [displayMonth];
+          populateMonthSelect(displayMonth);
+          renderDashboard();
+          updateTimestamp();
+        }
+
+        // Now fetch all other months in parallel
+        var promises = [];
+        for (var i = 0; i < MONTH_NAMES.length; i++) {
+          if (i === currentIdx) continue; // Already fetched
+          promises.push(fetchMonth(MONTH_NAMES[i]));
+        }
+
+        return Promise.all(promises).then(function (results) {
+          for (var j = 0; j < results.length; j++) {
+            if (results[j].entries.length > 0) {
+              monthData[results[j].month] = results[j].entries;
+            }
+          }
+
+          // Build available months in chronological order (Jan→Dec)
+          availableMonths = [];
+          for (var k = 0; k < MONTH_NAMES.length; k++) {
+            if (monthData[MONTH_NAMES[k]]) {
+              availableMonths.push(MONTH_NAMES[k]);
+            }
+          }
+
+          // If current month had no data, default to most recent month that does
+          if (!displayMonth) {
+            displayMonth = availableMonths[availableMonths.length - 1] || null;
+          }
+
+          if (displayMonth) {
+            populateMonthSelect(displayMonth);
+            renderDashboard();
+            updateTimestamp();
+          } else {
+            rowsEl.innerHTML = '<div class="lb-empty">No leaderboard data available yet.</div>';
+            expandRow.style.display = "none";
+          }
+        });
       })
       .catch(function (err) {
         console.error("Failed to fetch leaderboard data:", err);
@@ -348,32 +407,30 @@
       });
   }
 
-  function populateMonthSelect() {
+  // ---- Month selector (chronological order) ----
+  function populateMonthSelect(selectedMonth) {
     monthSelect.innerHTML = "";
-    for (var i = 0; i < months.length; i++) {
+    for (var i = 0; i < availableMonths.length; i++) {
       var opt = document.createElement("option");
-      opt.value = months[i];
-      opt.textContent = months[i];
+      opt.value = availableMonths[i];
+      opt.textContent = availableMonths[i] + " " + new Date().getFullYear();
+      if (availableMonths[i] === selectedMonth) opt.selected = true;
       monthSelect.appendChild(opt);
     }
   }
 
   function getSelectedMonth() {
-    return monthSelect.value || (months[0] || "");
+    return monthSelect.value || (availableMonths[availableMonths.length - 1] || "");
   }
 
-  function getFilteredSorted() {
-    var selected = getSelectedMonth();
-    var filtered = [];
-    for (var i = 0; i < allData.length; i++) {
-      if (allData[i].month === selected) filtered.push(allData[i]);
-    }
-    filtered.sort(function (a, b) { return b.pts - a.pts; });
-    return filtered;
+  function getSortedForMonth(monthName) {
+    var list = monthData[monthName] || [];
+    return list.slice().sort(function (a, b) { return b.pts - a.pts; });
   }
 
+  // ---- Render: Dashboard (top 10) ----
   function renderDashboard() {
-    var sorted = getFilteredSorted();
+    var sorted = getSortedForMonth(getSelectedMonth());
     if (sorted.length === 0) {
       rowsEl.innerHTML = '<div class="lb-empty">No data for this month yet.</div>';
       expandRow.style.display = "none";
@@ -383,8 +440,9 @@
     expandRow.style.display = sorted.length > TOP_N ? "block" : "none";
   }
 
+  // ---- Modal ----
   function openFullModal() {
-    var sorted = getFilteredSorted();
+    var sorted = getSortedForMonth(getSelectedMonth());
     modalMonth.textContent = getSelectedMonth();
     modalCount.textContent = sorted.length;
     modalRows.innerHTML   = buildRowsHtml(sorted, 0);
@@ -397,6 +455,7 @@
     document.body.style.overflow = "";
   }
 
+  // ---- Timestamp ----
   function updateTimestamp() {
     var now = new Date();
     var h = now.getHours();
@@ -406,14 +465,16 @@
     updateEl.textContent = h + ":" + (m < 10 ? "0" : "") + m + " " + ampm;
   }
 
+  // ---- Events ----
   monthSelect.addEventListener("change", renderDashboard);
-  refreshBtn.addEventListener("click", function (e) { e.preventDefault(); fetchData(); });
+  refreshBtn.addEventListener("click", function (e) { e.preventDefault(); fetchAllMonths(); });
   viewFullBtn.addEventListener("click", function (e) { e.preventDefault(); openFullModal(); });
   modalClose.addEventListener("click", function (e) { e.preventDefault(); closeFullModal(); });
   modalOverlay.addEventListener("click", function (e) { if (e.target === modalOverlay) closeFullModal(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeFullModal(); });
 
-  fetchData();
+  // ---- Boot ----
+  fetchAllMonths();
 })();
 </script>
 
